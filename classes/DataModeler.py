@@ -7,7 +7,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import KBinsDiscretizer
 
 class DataModeler:
-    def __init__(self, data, target_variable: str, numeric_vars: list, categorical_vars: list, test_size: float = 0.2, random_state: int = 42):
+    def __init__(self, data, target_variable: str, numeric_vars: list, categorical_vars: list, test_size: float = 0.3, random_state: int = 42):
         
         # Initialize data
         self.data = data
@@ -21,7 +21,7 @@ class DataModeler:
         self.random_state = random_state
 
         # Initialize model
-        self.model = LogisticRegression(max_iter=1000)
+        self.model = LogisticRegression(max_iter=10000)
 
         # Initialize data splits
         self.X_train = None
@@ -56,9 +56,14 @@ class DataModeler:
         print('----------------------------')
 
         print('\n----------------------------')
-        print('raw data types'.center(28, '-'))
+        print('raw data preview and data types'.center(28, '-'))
         print(self.processed_data.dtypes)
+        print(self.processed_data.head(5))
 
+        # # Encode the number of banking products by counting the number of 'yes' values in the banking products columns
+        # columns = ['default', 'housing', 'loan']
+        # self.processed_data['Count of Banking Products'] = self.processed_data[columns].apply(lambda x: x.eq('yes').sum())
+                
         # Encode poutcome using a binary variable based on whether the previous campaign was successful or not ('Previous
         # Campaign Outcome')
         attr = 'poutcome'
@@ -107,7 +112,7 @@ class DataModeler:
         # Encode pdays using a binary variable based on whether they had been contacted or not in the previous campaign
         # contacted from previous campaign ('Days Since Last Contacted')
         attr = 'pdays'
-        new_attr = attr+'_yes'
+        new_attr = attr+'_binary'
         self.processed_data[new_attr] = self.processed_data[attr].apply(lambda x: 0 if x == -1 else 1)
         self.processed_data = self.processed_data.drop(attr, axis=1)
 
