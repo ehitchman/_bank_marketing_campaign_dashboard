@@ -199,6 +199,35 @@ class DataModeler:
         print('attached probabilities'.center(28, '-'))
         print(self.x_test.head(5))
 
+    def apply_model_to_processed_data(self):
+        """
+        Applies the trained logistic regression model to the processed data stored in
+        self.processed_data, predicts probabilities, and attaches these predictions as
+        a new column to a copy of the processed data.
+        
+        Returns:
+        - all_processed_data_with_predictions: a copy of self.processed_data with an additional
+        column for predicted probabilities.
+        """
+        # Ensure the model is trained
+        if self.model:
+            all_processed_data_with_predictions = self.processed_data.copy()
+
+            # Predict probabilities for the processed data
+            probabilities = self.model.predict_proba(all_processed_data_with_predictions.drop('deposit', axis=1))
+            positive_class_probabilities = probabilities[:, 1]
+
+            # Attach probabilities to the copied dataset
+            all_processed_data_with_predictions['predicted_probabilities'] = positive_class_probabilities
+
+            self.all_processed_data_with_predictions = all_processed_data_with_predictions
+            print("Model predictions attached to a copy of self.processed_data.")
+            return None
+
+        else:
+            print("Model not trained. Please train the model before applying it to the processed data.")
+            return None
+
     def extract_coefficients_and_odds_ratios(self):
         """
         Extracts the coefficients and odds ratios from the logistic regression model
@@ -235,3 +264,4 @@ class DataModeler:
         self.train_and_evaluate_model()
         self.extract_prediction_probabilities()
         self.extract_coefficients_and_odds_ratios()
+        self.apply_model_to_processed_data()
