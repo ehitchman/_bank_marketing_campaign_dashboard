@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -193,21 +194,44 @@ class DataModeler:
         print('----------------------------')
         
         self.predicted_probabilities = self.model.predict_proba(self.x_test)
-        print('\n----------------------------')
-        print('predicted probabilities'.center(28, '-'))
-        print(self.predicted_probabilities[:5])
-
-        
         self.x_test['predicted_probabilities'] = self.predicted_probabilities[:, 1] 
         print('\n----------------------------')
         print('attached probabilities'.center(28, '-'))
         print(self.x_test.head(5))
 
-        return self.x_test
+    def extract_coefficients_and_odds_ratios(self):
+        """
+        Extracts the coefficients and odds ratios from the logistic regression model
+        and creates a summary DataFrame.
+        """
+        if self.model:
+            # Extract coefficients/odds_ratios from the model
+            coefficients = self.model.coef_[0]
+            odds_ratios = np.exp(coefficients)
+            
+            # Ensure feature names match the trained model's features
+            feature_names = self.x_train.columns
+            
+            # Create a summary DataFrame
+            coeff_summary = pd.DataFrame({
+                'Feature': feature_names,
+                'Coefficient': coefficients,
+                'Odds Ratio': odds_ratios
+            }).sort_values(by='Odds Ratio', ascending=False)
+            
+            print("\nCoefficients and Odds Ratios Summary:")
+            print(coeff_summary.head(5))
+            
+            # Add to the class instance
+            self.coeff_summary = coeff_summary.sort_values(by='Feature', ascending=True)
+
+        else:
+            print("Model not trained. Please train the model before extracting coefficients.")
+            return None
 
     def run(self):
         self.preprocess_data()
         self.split_data()
         self.train_and_evaluate_model()
-        prediction_probabilities = self.extract_prediction_probabilities()
-        return prediction_probabilities
+        self.extract_prediction_probabilities()
+        self.extract_coefficients_and_odds_ratios()

@@ -12,7 +12,8 @@ def main():
     # Set file paths
     raw_bank_csv_filepath = os.path.join('.', 'data', 'bank.csv')
     model_predictions_bank_csv_filepath = os.path.join('.', 'data', 'bank_model predictions.csv')
-
+    model_coefficients_bank_csv_filepath = os.path.join('.', 'data', 'bank_model coefficients.csv')
+    
     # Create a data loader object and load data
     data_loader = DataHandler(filepath=raw_bank_csv_filepath)
     data = data_loader.data
@@ -27,14 +28,14 @@ def main():
         categorical_vars=categorical_vars
         )
 
-    # Run the data modeler
-    prediction_probabilities = data_modeler.run()
+    # Run the data modeler (outputs x_test predictions, coefficients, odds ratios)
+    data_modeler.run()
 
     # Consolidate one-hot encoded columns
     prefixes = ['age_', 'job_', 'marital_', 'education_']
     for prefix in prefixes:
-        prediction_probabilities = utilities.consolidate_one_hot_columns(
-            prediction_probabilities, 
+        data_modeler.x_test = utilities.consolidate_one_hot_columns(
+            data_modeler.x_test, 
             prefix, 
             drop_original=True
             )
@@ -42,22 +43,29 @@ def main():
     # Convert binary values (0, 1) to boolean strings ('false', 'true')
     columns = ['default_yes', 'housing_yes', 'loan_yes']
     for column in columns:
-        prediction_probabilities = utilities.convert_binary_to_boolean(
-            prediction_probabilities, 
+        data_modeler.x_test = utilities.convert_binary_to_boolean(
+            data_modeler.x_test, 
             column,
             drop_original=True
             )
     print('\n----------------------------')
     print('data prepared for export'.center(28, '-'))
-    print(type(prediction_probabilities))
-    print(prediction_probabilities.head(5))
+    print(type(data_modeler.x_test))
+    print(data_modeler.x_test.head(5))
 
     # Export data
     print('\n----------------------------')
-    print('EXPORT DATA'.center(28, '-'))
+    print('EXPORT PREDICTIONS'.center(28, '-'))
     data_loader.export_data(
-        prediction_probabilities, 
+        data_modeler.x_test, 
         model_predictions_bank_csv_filepath
+        )
+
+    print('\n----------------------------')
+    print('EXPORT COEFFICIENTS'.center(28, '-'))
+    data_loader.export_data(
+        data_modeler.coeff_summary, 
+        model_coefficients_bank_csv_filepath
         )
 
 if __name__ == "__main__":
