@@ -48,24 +48,24 @@ def main():
     data = data_loader.data
 
     # Create an instance of data modeler
-    numeric_vars=['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous'],
-    categorical_vars=['job', 'marital', 'education', 'default', 'housing', 'loan']
+    numeric_columns=['age', 'balance', 'day', 'duration', 'campaign', 'pdays', 'previous'],
+    categorical_columns=['job', 'marital', 'education', 'default', 'housing', 'loan']
     data_modeler = DataModeler(
         data=data, 
         target_variable='deposit', 
-        numeric_vars=numeric_vars,
-        categorical_vars=categorical_vars
+        numeric_columns=numeric_columns,
+        categorical_columns=categorical_columns
         )
 
-    # Run the data modeler (outputs x_test predictions, coefficients, odds ratios)
+    # Run the data modeler (outputs features_test predictions, coefficients, odds ratios)
     data_modeler.run()
 
     # Consolidate one-hot encoded columns and convert binary values to boolean strings
     prefixes = ['age_', 'job_', 'marital_', 'education_']
     columns = ['default_yes', 'housing_yes', 'loan_yes'] 
     dfs_config = {
-        'x_test': model_testsplit_predictions_csv_filepath, 
-        'all_processed_data_with_predictions': model_all_predictions_csv_filepath
+        'features_test': model_testsplit_predictions_csv_filepath, 
+        'data_with_predictions': model_all_predictions_csv_filepath
         }
     
     # Consolidate one-hot encoded columns, convert binary values to boolean, 
@@ -93,4 +93,4 @@ def main():
 
 if __name__ == "__main__":
     data_modeler = main()
-    print(data_modeler.all_processed_data_with_predictions.sort_values(by='deposit', ascending=True).head(75))
+    print(data_modeler.data_with_predictions.sort_values(by='deposit', ascending=True).head(75))
